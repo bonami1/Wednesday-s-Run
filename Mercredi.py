@@ -15,7 +15,7 @@ class Player(pygame.sprite.Sprite):
         self.ducking = False
 
     def update(self, keys):
-        if keys[pygame.K_SPACE] and not self.jumping and not self.ducking:
+        if keys[pygame.K_UP] and not self.jumping and not self.ducking:
             self.jumping = True
             self.vel_y = JUMP_VELOCITY
 

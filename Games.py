@@ -47,7 +47,7 @@ class Game:
                     running = False
                 
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_p:
+                    if event.key == pygame.K_SPACE:
                         self.toggle_pause()
 
             keys = pygame.key.get_pressed()
