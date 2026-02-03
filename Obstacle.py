@@ -1,5 +1,4 @@
 import pygame
-import random
 from Parametres import OBSTACLE_SPEED, GROUND_Y
 
 class Obstacle(pygame.sprite.Sprite):
@@ -7,6 +6,7 @@ class Obstacle(pygame.sprite.Sprite):
         super().__init__()
         self.type = type
 
+        # --- Charger l'image selon le type ---
         if type == "wolf":
             self.image = pygame.image.load("Assets/Loup_garou.png").convert_alpha()
             self.image = pygame.transform.scale(self.image, (60, 80))
@@ -31,7 +31,17 @@ class Obstacle(pygame.sprite.Sprite):
             self.rect = self.image.get_rect()
             self.rect.y = GROUND_Y - 200
 
+        else:
+            # sécurité si type inconnu
+            self.image = pygame.Surface((60, 80), pygame.SRCALPHA)
+            self.rect = self.image.get_rect()
+            self.rect.y = GROUND_Y - self.rect.height
+
+        # Position de départ
         self.rect.x = 1000
+
+        # ✅ Masque (pixel-perfect) : basé sur les pixels non transparents
+        self.mask = pygame.mask.from_surface(self.image, 200)
 
     def update(self):
         self.rect.x -= OBSTACLE_SPEED

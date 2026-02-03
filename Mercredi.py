@@ -9,7 +9,7 @@ class Player(pygame.sprite.Sprite):
 
         # --------- LOAD RUN (5 frames) ----------
         self.run_frames = [
-            #pygame.image.load("Assets/Run/run1.png").convert_alpha(),
+            pygame.image.load("Assets/Run/run1.png").convert_alpha(),
             pygame.image.load("Assets/Run/run2.png").convert_alpha(),
             pygame.image.load("Assets/Run/run3.png").convert_alpha(),
             pygame.image.load("Assets/Run/run4.png").convert_alpha(),
@@ -34,15 +34,18 @@ class Player(pygame.sprite.Sprite):
         self.rect.x = 80
         self.rect.y = GROUND_Y - self.rect.height
 
+        # ✅ Masque initial (pixel-perfect)
+        self.mask = pygame.mask.from_surface(self.image)
+
         # Physique / état
         self.vel_y = 0
         self.jumping = False
         self.ducking = False
 
-        # --------- RUN ANIMATION TIMER ----------
+        # Run animation
         self.run_index = 0
         self.anim_timer = 0
-        self.ANIM_SPEED = 100  # ms par image
+        self.ANIM_SPEED = 100  # ms par frame
 
     def start_jump(self):
         self.jumping = True
@@ -50,7 +53,7 @@ class Player(pygame.sprite.Sprite):
 
     def handle_input(self, keys):
         # Jump
-        if keys[pygame.K_SPACE] and not self.jumping and not self.ducking:
+        if keys[pygame.K_UP] and not self.jumping and not self.ducking:
             self.start_jump()
 
         # Duck
@@ -78,6 +81,12 @@ class Player(pygame.sprite.Sprite):
             if not self.jumping:
                 self.rect.y = GROUND_Y - self.rect.height
 
+    def set_image(self, new_image):
+        """Change l'image et met à jour le mask automatiquement (indispensable pour collide_mask)."""
+        if self.image is not new_image:
+            self.image = new_image
+            self.mask = pygame.mask.from_surface(self.image)
+
     def update_animation(self, dt):
         # ---- JUMP animation (5 frames) basée sur vel_y ----
         if self.jumping:
@@ -92,12 +101,12 @@ class Player(pygame.sprite.Sprite):
             else:
                 idx = 4
 
-            self.image = self.jump_frames[idx]
+            self.set_image(self.jump_frames[idx])
             return
 
-        # ---- DUCK (sans frames pour l’instant) ----
+        # ---- DUCK (sans frames dédiées pour l’instant) ----
         if self.ducking:
-            self.image = self.run_frames[0]
+            self.set_image(self.run_frames[0])
             return
 
         # ---- RUN animation (boucle 5 frames) ----
@@ -106,7 +115,7 @@ class Player(pygame.sprite.Sprite):
             self.anim_timer = 0
             self.run_index = (self.run_index + 1) % len(self.run_frames)
 
-        self.image = self.run_frames[self.run_index]
+        self.set_image(self.run_frames[self.run_index])
 
     def update(self, keys, dt):
         self.handle_input(keys)
