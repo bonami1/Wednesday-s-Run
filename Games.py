@@ -27,6 +27,9 @@ class Game:
 
         self.spawn_timer = 0
 
+        self.paused = False
+
+
     def spawn_obstacle(self):
         types = ["wolf", "hyde", "corbeau", "chauve_souris"]
         obstacle_type = random.choice(types)
@@ -38,30 +41,36 @@ class Game:
         running = True
         while running:
             self.clock.tick(FPS)
-            keys = pygame.key.get_pressed()
-
+            
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
+                
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_p:
+                        self.toggle_pause()
 
-            self.spawn_timer += 1
-            if self.spawn_timer > 90:
-                self.spawn_obstacle()
-                self.spawn_timer = 0
+            keys = pygame.key.get_pressed()
 
-            self.player.update(keys)
-            self.obstacles.update()
+            if not self.paused:
+                self.player.update(keys)
+                self.spawn_timer += 1
+                if self.spawn_timer > 90:
+                    self.spawn_obstacle()
+                    self.spawn_timer = 0
+
+                self.obstacles.update()
 
 
-            # Collision
-            hits = pygame.sprite.spritecollide(self.player, self.obstacles, True)
-            if hits:
-                self.lives -= 1
-                if self.lives <= 0:
-                    running = False
+                # Collision
+                hits = pygame.sprite.spritecollide(self.player, self.obstacles, True)
+                if hits:
+                    self.lives -= 1
+                    if self.lives <= 0:
+                        running = False
 
-            self.score += 1
-            self.timer += 1 / FPS
+                self.score += 1
+                self.timer += 1 / FPS
 
             self.draw()
 
@@ -84,7 +93,21 @@ class Game:
         self.screen.blit(timer_text, (10, 140))
         self.screen.blit(lives_text, (10, 170))
 
+        if self.paused:
+            font = pygame.font.SysFont("Arial", 60)
+            pause_text = font.render("PAUSE", True, (255, 255, 0))
+            self.screen.blit(
+                pause_text,
+                (SCREEN_WIDTH // 2 - pause_text.get_width() // 2,
+                SCREEN_HEIGHT // 2 - pause_text.get_height() // 2)
+            )
+        
         pygame.display.flip()
+
+
+    def toggle_pause(self):
+        self.paused = not self.paused
+
 
     def game_over(self):
         font = pygame.font.SysFont("Arial", 48)
