@@ -27,9 +27,6 @@ class Game:
 
         self.spawn_timer = 0
 
-        self.paused = False
-
-
     def spawn_obstacle(self):
         types = ["wolf", "hyde", "corbeau", "chauve_souris"]
         obstacle_type = random.choice(types)
@@ -40,47 +37,40 @@ class Game:
     def run(self):
         running = True
         while running:
-            self.clock.tick(FPS)
-            
+            dt = self.clock.tick(FPS)  # ✅ récupère dt (ms)
+            keys = pygame.key.get_pressed()
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
-                
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_SPACE:
-                        self.toggle_pause()
 
-            keys = pygame.key.get_pressed()
+            self.spawn_timer += 1
+            if self.spawn_timer > 90:
+                self.spawn_obstacle()
+                self.spawn_timer = 0
 
-            if not self.paused:
-                self.player.update(keys)
-                self.spawn_timer += 1
-                if self.spawn_timer > 90:
-                    self.spawn_obstacle()
-                    self.spawn_timer = 0
+            self.player.update(keys, dt)  # ✅ passe dt ici
+            self.obstacles.update()
 
-                self.obstacles.update()
+            # Collision
+            hits = pygame.sprite.spritecollide(self.player, self.obstacles, True)
+            if hits:
+                self.lives -= 1
+                if self.lives <= 0:
+                    running = False
 
-
-                # Collision
-                hits = pygame.sprite.spritecollide(self.player, self.obstacles, True)
-                if hits:
-                    self.lives -= 1
-                    if self.lives <= 0:
-                        running = False
-
-                self.score += 1
-                self.timer += 1 / FPS
+            self.score += 1
+            self.timer += 1 / FPS
 
             self.draw()
 
         self.game_over()
 
     def draw(self):
-        pygame.draw.line(self.screen, (255,0,0), (0, GROUND_Y), (SCREEN_WIDTH, GROUND_Y), 3)
+        pygame.draw.line(self.screen, (255, 0, 0), (0, GROUND_Y), (SCREEN_WIDTH, GROUND_Y), 3)
 
         self.screen.blit(self.bg, (0, 0))
-        pygame.draw.line(self.screen, (0,0,0), (0, GROUND_Y), (SCREEN_WIDTH, GROUND_Y), 3)
+        pygame.draw.line(self.screen, (0, 0, 0), (0, GROUND_Y), (SCREEN_WIDTH, GROUND_Y), 3)
 
         self.all_sprites.draw(self.screen)
 
@@ -93,21 +83,7 @@ class Game:
         self.screen.blit(timer_text, (10, 140))
         self.screen.blit(lives_text, (10, 170))
 
-        if self.paused:
-            font = pygame.font.SysFont("Arial", 60)
-            pause_text = font.render("PAUSE", True, (255, 255, 0))
-            self.screen.blit(
-                pause_text,
-                (SCREEN_WIDTH // 2 - pause_text.get_width() // 2,
-                SCREEN_HEIGHT // 2 - pause_text.get_height() // 2)
-            )
-        
         pygame.display.flip()
-
-
-    def toggle_pause(self):
-        self.paused = not self.paused
-
 
     def game_over(self):
         font = pygame.font.SysFont("Arial", 48)
