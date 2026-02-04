@@ -1,5 +1,5 @@
-SCREEN_WIDTH = 900
-SCREEN_HEIGHT = 900
+SCREEN_WIDTH = 1280
+SCREEN_HEIGHT = 720
 FPS = 60
 
 GROUND_Y = SCREEN_HEIGHT - 200  # sol à 100px du bas
@@ -10,4 +10,4 @@ DUCK_HEIGHT = 40
 
 OBSTACLE_BASE_SPEED = 8
 OBSTACLE_SPEED_INCREMENT = 1      # +1 de vitesse
-SCORE_SPEED_STEP = 1000            # tous les 1000 points
+SCORE_SPEED_STEP = 400           # tous les 400 points

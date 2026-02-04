@@ -5,7 +5,7 @@ class HandProjectile(pygame.sprite.Sprite):
         super().__init__()
 
         self.image = pygame.image.load("Assets/Main.png").convert_alpha()
-        self.image = pygame.transform.scale(self.image, (40, 40))
+        self.image = pygame.transform.scale(self.image, (80, 80))
 
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
