@@ -47,6 +47,9 @@ class Player(pygame.sprite.Sprite):
         self.anim_timer = 0
         self.ANIM_SPEED = 100  # ms par frame
 
+        # posseder la "main"
+        self.has_hand = False
+
     def start_jump(self):
         self.jumping = True
         self.vel_y = JUMP_VELOCITY

@@ -1,7 +1,7 @@
 import pygame
 import random
 import os
-from Parametres import SCREEN_WIDTH, SCREEN_HEIGHT, FPS, GROUND_Y
+from Parametres import *
 from Mercredi import Player
 from Obstacle import Obstacle
 
@@ -76,6 +76,13 @@ class Game:
         self.font_big = pygame.font.SysFont("Arial", 72, bold=True)
         self.font_mid = pygame.font.SysFont("Arial", 36, bold=True)
         self.font_small = pygame.font.SysFont("Arial", 24)
+
+        # vitesse de course
+        self.obstacle_speed = OBSTACLE_BASE_SPEED
+        self.last_speed_step = 0
+
+        # Lancé de la "main"
+        self.projectiles = pygame.sprite.Group()
 
     # ================= BEST SCORE =================
     def load_best_score(self):
@@ -158,12 +165,19 @@ class Game:
         if self.music_on:
             pygame.mixer.music.play(-1)
 
+        self.obstacle_speed = OBSTACLE_BASE_SPEED
+        self.last_speed_step = 0
+
+        # Lancé de la "main"
+        self.projectiles.empty()
+
     def reset_game(self):
         self.start_game()
 
     # ================= OBSTACLES =================
     def spawn_obstacle(self):
-        obstacle = Obstacle(random.choice(["wolf", "hyde", "corbeau", "chauve_souris"]))
+        obstacle = Obstacle(random.choice(["wolf", "hyde", "corbeau", "chauve_souris"]),
+                            self.obstacle_speed)
         self.obstacles.add(obstacle)
         self.all_sprites.add(obstacle)
 
@@ -190,6 +204,18 @@ class Game:
                     # pause uniquement en jeu
                     if event.key == pygame.K_p and self.state in ("PLAYING", "PAUSED"):
                         self.toggle_pause()
+
+                    # tirer la "main"
+                    if event.key == pygame.K_SPACE:
+                        if self.state == "PLAYING" and self.player.has_hand:
+                            from Hand import HandProjectile
+                            hand = HandProjectile(
+                                self.player.rect.right,
+                                self.player.rect.centery
+                            )
+                            self.projectiles.add(hand)
+                            self.all_sprites.add(hand)
+                            self.player.has_hand = False  # usage unique
 
                 # clics souris
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
@@ -226,22 +252,47 @@ class Game:
 
                 self.player.update(keys, dt)
                 self.obstacles.update()
+                self.projectiles.update()
+
+                # ---- COLLISION MAIN / OBSTACLES ----
+                pygame.sprite.groupcollide(
+                    self.projectiles,
+                    self.obstacles,
+                    True,   # détruit la main
+                    True,   # détruit l'obstacle
+                    pygame.sprite.collide_mask
+                )
 
                 hits = pygame.sprite.spritecollide(
                     self.player, self.obstacles, True, pygame.sprite.collide_mask
                 )
-
                 if hits:
-                    self.lives -= 1
-                    if self.lives <= 0:
-                        self.update_best_score_if_needed()
+                    print("COLLISION AVEC :", [o.type for o in hits])
 
-                        self.state = "GAME_OVER"
-                        pygame.mixer.music.stop()
-                        if self.game_over_sound:
-                            self.game_over_sound.play()
+                # donner la "main" au joueur
+                for obstacle in hits:
+                    print("TYPE OBSTACLE =", obstacle.type)
+                    if obstacle.type == "corbeau":
+                        self.player.has_hand = True
+                        print("🖐 MAIN RÉCUPÉRÉE")
+                    else:
+                        self.lives -= 1
+
+                        if self.lives <= 0:
+                            self.update_best_score_if_needed()
+                            self.state = "GAME_OVER"
+                            pygame.mixer.music.stop()
+                            if self.game_over_sound:
+                                self.game_over_sound.play()
 
                 self.score += 1
+
+                # ---- AUGMENTATION DE LA VITESSE TOUS LES 1000 POINTS ----
+                current_step = self.score // SCORE_SPEED_STEP
+                if current_step > self.last_speed_step:
+                    self.last_speed_step = current_step
+                    self.obstacle_speed += OBSTACLE_SPEED_INCREMENT
+
                 self.timer += 1 / FPS
 
             self.draw()

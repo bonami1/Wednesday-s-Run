@@ -1,10 +1,11 @@
 import pygame
-from Parametres import OBSTACLE_SPEED, GROUND_Y
+from Parametres import OBSTACLE_BASE_SPEED, GROUND_Y
 
 class Obstacle(pygame.sprite.Sprite):
-    def __init__(self, type):
+    def __init__(self, type, speed):
         super().__init__()
-        self.type = type
+        self.type = type.lower()
+        self.speed = speed 
 
         # --- Charger l'image selon le type ---
         if type == "wolf":
@@ -44,6 +45,6 @@ class Obstacle(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image, 200)
 
     def update(self):
-        self.rect.x -= OBSTACLE_SPEED
+        self.rect.x -= OBSTACLE_BASE_SPEED
         if self.rect.x < -100:
             self.kill()
