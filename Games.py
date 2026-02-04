@@ -15,9 +15,35 @@ class Game:
         pygame.display.set_caption("Mercredi Runner")
         self.clock = pygame.time.Clock()
 
-        self.bg = pygame.image.load("Assets/Background.png").convert()
-        self.bg = pygame.transform.scale(self.bg, (SCREEN_WIDTH, SCREEN_HEIGHT))
+        # ... (début du init)
+        self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+        pygame.display.set_caption("Mercredi Runner")
+        self.clock = pygame.time.Clock()
 
+        # ---------- BACKGROUNDS (MODIFIÉ) ----------
+        # Liste des noms de tes fichiers (Mets tes vrais noms ici !)
+        self.bg_filenames = [
+            "Assets/background_clair.png",  # Image 1 (0 - 1999)
+            "Assets/Background.png",   # Image 2 (2000 - 3999)
+            "Assets/background_red.png"     # Image 3 (4000 - 5999) -> puis boucle
+        ]
+        
+        self.bg_images = []
+        for filename in self.bg_filenames:
+            # On charge et on redimensionne chaque image
+            try:
+                img = pygame.image.load(filename).convert()
+                img = pygame.transform.scale(img, (SCREEN_WIDTH, SCREEN_HEIGHT))
+                self.bg_images.append(img)
+            except pygame.error as e:
+                print(f"⚠️ Erreur chargement fond {filename}: {e}")
+                # En cas d'erreur, on crée un fond noir par défaut pour éviter le crash
+                surf = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+                surf.fill((0, 0, 0))
+                self.bg_images.append(surf)
+
+        self.current_bg_index = 0
+        
         # ---------- ETAT ----------
         # MENU / SCOREBOARD / PLAYING / PAUSED / GAME_OVER
         self.state = "MENU"
@@ -272,7 +298,7 @@ class Game:
                 # donner la "main" au joueur
                 for obstacle in hits:
                     print("TYPE OBSTACLE =", obstacle.type)
-                    if obstacle.type == "corbeau":
+                    if obstacle.type == "chauve_souris":
                         self.player.has_hand = True
                         print("🖐 MAIN RÉCUPÉRÉE")
                     else:
@@ -286,6 +312,10 @@ class Game:
                                 self.game_over_sound.play()
 
                 self.score += 1
+
+                # ---- CHANGEMENT DE BACKGROUND TOUS LES 2000 POINTS ----          
+                if len(self.bg_images) > 0:
+                    self.current_bg_index = (self.score // 2000) % len(self.bg_images)
 
                 # ---- AUGMENTATION DE LA VITESSE TOUS LES 1000 POINTS ----
                 current_step = self.score // SCORE_SPEED_STEP
@@ -397,7 +427,10 @@ class Game:
 
     # ================= DRAW FRAME =================
     def draw(self):
-        self.screen.blit(self.bg, (0, 0))
+        if self.bg_images:
+            self.screen.blit(self.bg_images[self.current_bg_index], (0, 0))
+        else:
+            self.screen.fill((0,0,0)) # Fallback si pas d'images
 
         if self.state in ("PLAYING", "PAUSED", "GAME_OVER"):
             pygame.draw.line(self.screen, (0, 0, 0), (0, GROUND_Y), (SCREEN_WIDTH, GROUND_Y), 3)
