@@ -15,11 +15,6 @@ class Game:
         pygame.display.set_caption("Mercredi Runner")
         self.clock = pygame.time.Clock()
 
-        # ... (début du init)
-        self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-        pygame.display.set_caption("Mercredi Runner")
-        self.clock = pygame.time.Clock()
-
         # ---------- BACKGROUNDS (MODIFIÉ) ----------
         # Liste des noms de tes fichiers (Mets tes vrais noms ici !)
         self.bg_filenames = [
@@ -109,6 +104,11 @@ class Game:
 
         # Lancé de la "main"
         self.projectiles = pygame.sprite.Group()
+
+        self.hand_icon = pygame.image.load("Assets/Main.png").convert_alpha()
+        self.hand_icon = pygame.transform.scale(self.hand_icon, (40, 40))
+        self.hand_icon_gray = self.hand_icon.copy()
+        self.hand_icon_gray.fill((100, 100, 100, 180), special_flags=pygame.BLEND_RGBA_MULT)
 
     # ================= BEST SCORE =================
     def load_best_score(self):
@@ -348,6 +348,22 @@ class Game:
 
         self.volume_animation -= 1
 
+    def draw_hand_hud(self):
+        x, y = 10, 170  # position HUD
+
+        if not self.player:
+            return
+
+        if self.player.has_hand:
+            # icône active
+            self.screen.blit(self.hand_icon, (x, y))
+
+            txt = self.font_small.render("SPACE", True, (255, 220, 220))
+            self.screen.blit(txt, (x + 50, y + 10))
+        else:
+            # icône grisée
+            self.screen.blit(self.hand_icon_gray, (x, y))
+
     def draw_button(self, rect, text, bg_color, text_color=(0, 0, 0)):
         pygame.draw.rect(self.screen, bg_color, rect, border_radius=14)
         pygame.draw.rect(self.screen, (0, 0, 0), rect, width=3, border_radius=14)
@@ -440,6 +456,8 @@ class Game:
             hud_lives = self.font_small.render(f"Vies: {self.lives}", True, (255, 255, 255))
             self.screen.blit(hud_score, (10, 110))
             self.screen.blit(hud_lives, (10, 140))
+
+            self.draw_hand_hud()
 
         self.draw_volume_ui()
 
