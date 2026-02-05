@@ -293,23 +293,26 @@ class Game:
                     self.player, self.obstacles, True, pygame.sprite.collide_mask
                 )
                 if hits:
+                    got_bonus = False
                     print("COLLISION AVEC :", [o.type for o in hits])
 
-                # donner la "main" au joueur
-                for obstacle in hits:
-                    print("TYPE OBSTACLE =", obstacle.type)
-                    if obstacle.type == "chauve_souris":
-                        self.player.has_hand = True
-                        print("MAIN RÉCUPÉRÉE")
-                    else:
+                    # donner la "main" au joueur
+                    for obstacle in hits:
+                        print("TYPE OBSTACLE =", obstacle.type)
+                        if obstacle.type == "chauve_souris":
+                            self.player.has_hand = True
+                            got_bonus = True
+                    # si ce n'est pas un bonus -> perdre une vie
+                    if not got_bonus:
                         self.lives -= 1
 
-                        if self.lives <= 0:
-                            self.update_best_score_if_needed()
-                            self.state = "GAME_OVER"
-                            pygame.mixer.music.stop()
-                            if self.game_over_sound:
-                                self.game_over_sound.play()
+                if self.lives <= 0:
+                    self.lives = 0  # sécurité visuelle
+                    self.update_best_score_if_needed()
+                    self.state = "GAME_OVER"
+                    pygame.mixer.music.stop()
+                    if self.game_over_sound:
+                        self.game_over_sound.play()
 
                 self.score += 1
 
