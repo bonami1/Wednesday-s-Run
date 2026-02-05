@@ -1,3 +1,4 @@
+import random
 import pygame
 from Parametres import OBSTACLE_BASE_SPEED, GROUND_Y
 
@@ -24,7 +25,17 @@ class Obstacle(pygame.sprite.Sprite):
             self.image = pygame.image.load("Assets/Corbeau.png").convert_alpha()
             self.image = pygame.transform.scale(self.image, (120, 140))
             self.rect = self.image.get_rect()
-            self.rect.y = GROUND_Y - 150
+
+            # Commence haut dans le ciel
+            self.rect.y = random.randint(50, 200)
+
+            # --- comportement plongée ---
+            self.diving = False
+            self.dive_speed = random.randint(8, 12)
+            self.dive_trigger_x = random.randint(400, 700)
+
+            # plongée aléatoire
+            self.will_dive = random.random() < 0.5   # 50% de chance
 
         elif type == "chauve_souris":
             self.image = pygame.image.load("Assets/Chauve_souris.png").convert_alpha()
@@ -46,5 +57,20 @@ class Obstacle(pygame.sprite.Sprite):
 
     def update(self):
         self.rect.x -= self.speed
-        if self.rect.x < -100:
+
+        # --- COMPORTEMENT CORBEAU ---
+        if self.type == "corbeau":
+            # Déclenche la plongée quand il s'approche du joueur
+            if self.will_dive and not self.diving and self.rect.x < self.dive_trigger_x:
+                self.diving = True
+
+            if self.diving:
+                self.rect.y += self.dive_speed
+
+                # Limite basse (ne traverse pas le sol)
+                max_y = GROUND_Y - self.rect.height
+                if self.rect.y > max_y:
+                    self.rect.y = max_y
+
+        if self.rect.x < -150:
             self.kill()
