@@ -1,5 +1,5 @@
 import pygame
-from Parametres import GROUND_Y, GRAVITY, JUMP_VELOCITY, DUCK_HEIGHT
+from Settings import GROUND_Y, GRAVITY, JUMP_VELOCITY, DUCK_HEIGHT
 
 class Player(pygame.sprite.Sprite):
     def __init__(self):
@@ -46,9 +46,6 @@ class Player(pygame.sprite.Sprite):
         self.run_index = 0
         self.anim_timer = 0
         self.ANIM_SPEED = 100  # ms par frame
-
-        # posseder la "main"
-        self.has_hand = False
 
     def start_jump(self):
         self.jumping = True

@@ -1,6 +1,6 @@
 import random
 import pygame
-from Parametres import OBSTACLE_BASE_SPEED, GROUND_Y
+from Settings import OBSTACLE_BASE_SPEED, GROUND_Y
 
 class Obstacle(pygame.sprite.Sprite):
     def __init__(self, type, speed):
@@ -27,7 +27,7 @@ class Obstacle(pygame.sprite.Sprite):
             self.rect = self.image.get_rect()
 
             # Commence haut dans le ciel
-            self.rect.y = random.randint(50, 200)
+            self.rect.y = random.randint(15, 200)
 
             # --- comportement plongée ---
             self.diving = False

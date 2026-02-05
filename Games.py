@@ -1,12 +1,12 @@
 import pygame
 import random
 import os
-from Parametres import *
-from Mercredi import Player
+from Settings import *
+from Wednesday import Player
 from Obstacle import Obstacle
 
 
-class Game:
+class Games:
     def __init__(self):
         pygame.init()
         pygame.mixer.init()
@@ -119,6 +119,15 @@ class Game:
         self.hand_icon_gray = self.hand_icon.copy()
         self.hand_icon_gray.fill((100, 100, 100, 180), special_flags=pygame.BLEND_RGBA_MULT)
 
+        # ----- SUPER POUVOIR : MAINS STOCKÉES -----
+        self.hand_stock = 0          # nombre de mains gagnées
+        self.max_hand_stock = 5
+
+        self.super_active = False
+        self.super_timer = 0
+        self.SUPER_DURATION = 3.0    # secondes
+
+
     # ================= BEST SCORE =================
     def load_best_score(self):
         if os.path.exists(self.best_score_file):
@@ -176,6 +185,11 @@ class Game:
         self.timer = 0.0
         self.lives = 3
         self.spawn_timer = 0
+        # compteur main
+        self.hand_stock = 0
+        self.super_active = False
+        self.super_timer = 0
+
 
         self.state = "MENU"
 
@@ -194,6 +208,11 @@ class Game:
         self.timer = 0.0
         self.lives = 3
         self.spawn_timer = 0
+
+        # compteur de main
+        self.hand_stock = 0
+        self.super_active = False
+        self.super_timer = 0
 
         self.state = "PLAYING"
 
@@ -235,6 +254,13 @@ class Game:
                         self.change_volume(+5)
                     if event.key in (pygame.K_MINUS, pygame.K_KP_MINUS):
                         self.change_volume(-5)
+                    # Activer le super pouvoir
+                    if event.key == pygame.K_d:
+                        if self.state == "PLAYING" and self.hand_stock >= self.max_hand_stock:
+                            self.super_active = True
+                            self.super_timer = self.SUPER_DURATION
+                            self.hand_stock = 0
+
 
                     # pause uniquement en jeu
                     if event.key == pygame.K_p and self.state in ("PLAYING", "PAUSED"):
@@ -242,7 +268,7 @@ class Game:
 
                     # tirer la "main"
                     if event.key == pygame.K_SPACE:
-                        if self.state == "PLAYING" and self.player.has_hand:
+                        if self.state == "PLAYING" and self.hand_stock > 0:
                             from Hand import HandProjectile
                             hand = HandProjectile(
                                 self.player.rect.right,
@@ -250,7 +276,7 @@ class Game:
                             )
                             self.projectiles.add(hand)
                             self.all_sprites.add(hand)
-                            self.player.has_hand = False  # usage unique
+                            self.hand_stock -= 1
 
                 # clics souris
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
@@ -309,7 +335,10 @@ class Game:
                     for obstacle in hits:
                         print("TYPE OBSTACLE =", obstacle.type)
                         if obstacle.type == "chauve_souris":
-                            self.player.has_hand = True
+                            self.hand_stock = min(
+                                self.hand_stock + 1, 
+                                self.max_hand_stock
+                                ) # a ajouter : destruction
                             got_bonus = True
                     
                     # si ce n'est pas un bonus -> perdre une vie
@@ -319,6 +348,17 @@ class Game:
                             self.hit_sound.play()
                         
                         self.lives -= 1
+
+                # ----- SUPER POUVOIR ACTIF -----
+                if self.super_active:
+                    self.super_timer -= 1 / FPS
+                    # Détruire tous les obstacles à l'écran
+                    for obstacle in self.obstacles:
+                        obstacle.kill()
+
+                    if self.super_timer <= 0:
+                        self.super_active = False
+
 
                 if self.lives <= 0:
                     self.lives = 0  # sécurité visuelle
@@ -371,7 +411,7 @@ class Game:
         if not self.player:
             return
 
-        if self.player.has_hand:
+        if self.hand_stock > 0:
             # icône active
             self.screen.blit(self.hand_icon, (x, y))
 
@@ -380,6 +420,7 @@ class Game:
         else:
             # icône grisée
             self.screen.blit(self.hand_icon_gray, (x, y))
+
 
     def draw_button(self, rect, text, bg_color, text_color=(0, 0, 0)):
         pygame.draw.rect(self.screen, bg_color, rect, border_radius=14)
@@ -422,6 +463,24 @@ class Game:
         self.screen.blit(best, (SCREEN_WIDTH // 2 - best.get_width() // 2, 280))
 
         self.draw_button(self.btn_back, "RETOUR", (255, 255, 255))
+
+    def draw_super_hud(self):
+        x, y = 10, 200
+        txt = self.font_small.render(
+            f"Mains : {self.hand_stock}/{self.max_hand_stock}",
+            True,
+            (255, 200, 200)
+        )
+        self.screen.blit(txt, (x, y))
+
+        if self.super_active:
+            timer_txt = self.font_small.render(
+                f"DESTRUCTION : {self.super_timer:.1f}s",
+                True,
+                (255, 80, 80)
+            )
+            self.screen.blit(timer_txt, (x, y + 25))
+
 
     def draw_pause(self):
         overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -475,6 +534,9 @@ class Game:
             self.screen.blit(hud_lives, (10, 140))
 
             self.draw_hand_hud()
+
+            self.draw_super_hud()
+
 
         self.draw_volume_ui()
 
