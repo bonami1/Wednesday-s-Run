@@ -300,7 +300,7 @@ class Game:
                     print("TYPE OBSTACLE =", obstacle.type)
                     if obstacle.type == "chauve_souris":
                         self.player.has_hand = True
-                        print("🖐 MAIN RÉCUPÉRÉE")
+                        print("MAIN RÉCUPÉRÉE")
                     else:
                         self.lives -= 1
 
