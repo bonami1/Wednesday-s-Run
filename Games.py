@@ -12,7 +12,7 @@ class Games:
         pygame.mixer.init()
 
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-        pygame.display.set_caption("Mercredi Runner")
+        pygame.display.set_caption("Wednesday's Run")
         self.clock = pygame.time.Clock()
 
         # ---------- BACKGROUNDS (MODIFIÉ) ----------
@@ -31,7 +31,7 @@ class Games:
                 img = pygame.transform.scale(img, (SCREEN_WIDTH, SCREEN_HEIGHT))
                 self.bg_images.append(img)
             except pygame.error as e:
-                print(f"⚠️ Erreur chargement fond {filename}: {e}")
+                print(f"Erreur chargement fond {filename}: {e}")
                 # En cas d'erreur, on crée un fond noir par défaut pour éviter le crash
                 surf = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
                 surf.fill((0, 0, 0))
@@ -90,7 +90,7 @@ class Games:
             self.game_over_sound = pygame.mixer.Sound("Assets/gameover.mp3")
             self.game_over_sound.set_volume(0.8)
         except pygame.error as e:
-            print("⚠️ Son Game Over non chargé:", e)
+            print("Son Game Over non chargé:", e)
             self.game_over_sound = None
 
         # --- NOUVEAU : SON IMPACT / BLESSURE ---
@@ -99,7 +99,7 @@ class Games:
             self.hit_sound = pygame.mixer.Sound("Assets/hit.mp3")
             self.hit_sound.set_volume(0.6)
         except pygame.error as e:
-            print("⚠️ Son Hit non chargé (vérifie le nom du fichier):", e)
+            print("Son Hit non chargé (vérifie le nom du fichier):", e)
             self.hit_sound = None
 
         # polices
@@ -436,7 +436,7 @@ class Games:
         self.screen.blit(overlay, (0, 0))
 
         violet = (180, 80, 255)
-        title = self.font_big.render("MERCR. RUN", True, violet)
+        title = self.font_big.render("Wednesday's Run", True, violet)
         self.screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 120))
 
         subtitle = self.font_small.render("Play • Scoreboard • Quit", True, (230, 230, 230))

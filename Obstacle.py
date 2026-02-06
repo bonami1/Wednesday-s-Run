@@ -52,7 +52,7 @@ class Obstacle(pygame.sprite.Sprite):
         # Position de départ
         self.rect.x = 1000
 
-        # ✅ Masque (pixel-perfect) : basé sur les pixels non transparents
+        # Masque (pixel-perfect) : basé sur les pixels non transparents
         self.mask = pygame.mask.from_surface(self.image, 200)
 
     def update(self):

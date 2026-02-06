@@ -34,7 +34,7 @@ class Player(pygame.sprite.Sprite):
         self.rect.x = 80
         self.rect.y = GROUND_Y - self.rect.height
 
-        # ✅ Masque initial (pixel-perfect)
+        # Masque initial (pixel-perfect)
         self.mask = pygame.mask.from_surface(self.image)
 
         # Physique / état
